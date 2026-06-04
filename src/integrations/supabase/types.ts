@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      sellers: {
+        Row: {
+          admission_date: string | null
+          cpf: string
+          created_at: string
+          equipment_serial: string | null
+          exit_date: string | null
+          id: string
+          matricula: string
+          name: string
+          notes: string | null
+          role: string
+          status: Database["public"]["Enums"]["seller_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admission_date?: string | null
+          cpf: string
+          created_at?: string
+          equipment_serial?: string | null
+          exit_date?: string | null
+          id?: string
+          matricula: string
+          name: string
+          notes?: string | null
+          role: string
+          status?: Database["public"]["Enums"]["seller_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admission_date?: string | null
+          cpf?: string
+          created_at?: string
+          equipment_serial?: string | null
+          exit_date?: string | null
+          id?: string
+          matricula?: string
+          name?: string
+          notes?: string | null
+          role?: string
+          status?: Database["public"]["Enums"]["seller_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +70,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      seller_status: "ativo" | "aviso" | "inativo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +197,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      seller_status: ["ativo", "aviso", "inativo"],
+    },
   },
 } as const
