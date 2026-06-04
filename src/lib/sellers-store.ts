@@ -29,7 +29,7 @@ function load(): Seller[] {
       matricula: "",
       role: "Vendedor(a) Interno",
       ...s,
-    }));
+    })) as Seller[];
   } catch {
     return [];
   }
