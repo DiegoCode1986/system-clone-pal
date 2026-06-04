@@ -28,7 +28,7 @@ function load(): Seller[] {
       cpf: "",
       matricula: "",
       role: "Vendedor(a) Interno",
-      ...s,
+      ...(s as Partial<Seller>),
     })) as Seller[];
   } catch {
     return [];
