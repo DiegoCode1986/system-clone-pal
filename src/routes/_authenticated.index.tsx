@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { LogOut } from "lucide-react";
 import {
   Users,
   UserCheck,
@@ -51,7 +53,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Gestor de Vendedores" },
@@ -86,7 +88,14 @@ const statusDot: Record<SellerStatus, string> = {
 type Filter = "todos" | SellerStatus;
 
 function Index() {
+  const navigate = useNavigate();
   const { sellers, ready, addSeller, updateSeller, removeSeller } = useSellers();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todos");
@@ -135,6 +144,9 @@ function Index() {
             </Button>
             <Button variant="outline">
               <FileText className="mr-2 h-4 w-4" /> Termo Mobile
+            </Button>
+            <Button variant="ghost" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" /> Sair
             </Button>
           </div>
         </header>
