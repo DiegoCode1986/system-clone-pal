@@ -138,6 +138,9 @@ function Index() {
             <Button variant="outline">
               <FileText className="mr-2 h-4 w-4" /> Termo Mobile
             </Button>
+            <Button variant="ghost" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" /> Sair
+            </Button>
           </div>
         </header>
 
