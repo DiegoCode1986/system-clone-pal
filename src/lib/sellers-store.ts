@@ -38,8 +38,8 @@ function fromRow(r: Row): Seller {
   };
 }
 
-function toRow(s: Partial<Omit<Seller, "id" | "createdAt">>) {
-  const row: Record<string, unknown> = {};
+function toRow(s: Partial<Omit<Seller, "id" | "createdAt">>): Database["public"]["Tables"]["sellers"]["Update"] {
+  const row: Database["public"]["Tables"]["sellers"]["Update"] = {};
   if (s.name !== undefined) row.name = s.name;
   if (s.cpf !== undefined) row.cpf = s.cpf;
   if (s.matricula !== undefined) row.matricula = s.matricula;
