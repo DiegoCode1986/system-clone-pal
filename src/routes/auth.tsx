@@ -14,9 +14,19 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const MATRICULA_DOMAIN = "vendedores.local";
+
+function matriculaToEmail(matricula: string) {
+  return `${matricula}@${MATRICULA_DOMAIN}`;
+}
+
+function isValidMatricula(m: string) {
+  return /^\d{5}$/.test(m);
+}
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [matricula, setMatricula] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,8 +38,14 @@ function AuthPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValidMatricula(matricula)) {
+      return toast.error("A matrícula deve ter 5 dígitos.");
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: matriculaToEmail(matricula),
+      password,
+    });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Bem-vindo!");
@@ -38,9 +54,12 @@ function AuthPage() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValidMatricula(matricula)) {
+      return toast.error("A matrícula deve ter 5 dígitos.");
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
-      email,
+      email: matriculaToEmail(matricula),
       password,
       options: { emailRedirectTo: window.location.origin },
     });
@@ -49,12 +68,16 @@ function AuthPage() {
     toast.success("Conta criada. Faça login.");
   }
 
+  function handleMatriculaChange(value: string) {
+    setMatricula(value.replace(/\D/g, "").slice(0, 5));
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-sm">
         <CardContent className="p-6">
           <h1 className="mb-1 text-2xl font-bold">Gestor de Vendedores</h1>
-          <p className="mb-6 text-sm text-muted-foreground">Entre para gerenciar seus vendedores.</p>
+          <p className="mb-6 text-sm text-muted-foreground">Entre com sua matrícula para continuar.</p>
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
@@ -63,8 +86,17 @@ function AuthPage() {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="grid gap-3 pt-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email-l">E-mail</Label>
-                  <Input id="email-l" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Label htmlFor="mat-l">Matrícula</Label>
+                  <Input
+                    id="mat-l"
+                    inputMode="numeric"
+                    pattern="\d{5}"
+                    maxLength={5}
+                    placeholder="00000"
+                    value={matricula}
+                    onChange={(e) => handleMatriculaChange(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="pw-l">Senha</Label>
@@ -76,8 +108,17 @@ function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="grid gap-3 pt-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email-s">E-mail</Label>
-                  <Input id="email-s" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Label htmlFor="mat-s">Matrícula</Label>
+                  <Input
+                    id="mat-s"
+                    inputMode="numeric"
+                    pattern="\d{5}"
+                    maxLength={5}
+                    placeholder="00000"
+                    value={matricula}
+                    onChange={(e) => handleMatriculaChange(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="pw-s">Senha</Label>
