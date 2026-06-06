@@ -1,6 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-export type SellerStatus = "ativo" | "aviso" | "inativo";
+export type SellerStatus = Database["public"]["Enums"]["seller_status"];
 
 export interface Seller {
   id: string;
@@ -16,103 +20,123 @@ export interface Seller {
   createdAt: number;
 }
 
-const KEY = "gestor-vendedores-v2";
+type Row = Database["public"]["Tables"]["sellers"]["Row"];
 
-function load(): Seller[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return seed();
-    const parsed = JSON.parse(raw) as Seller[];
-    return parsed.map((s) => ({
-      cpf: "",
-      matricula: "",
-      role: "Vendedor(a) Interno",
-      ...(s as Partial<Seller>),
-    })) as Seller[];
-  } catch {
-    return [];
-  }
+function fromRow(r: Row): Seller {
+  return {
+    id: r.id,
+    name: r.name,
+    cpf: r.cpf,
+    matricula: r.matricula,
+    role: r.role,
+    equipmentSerial: r.equipment_serial ?? undefined,
+    status: r.status,
+    admissionDate: r.admission_date ?? undefined,
+    exitDate: r.exit_date ?? undefined,
+    notes: r.notes ?? undefined,
+    createdAt: new Date(r.created_at).getTime(),
+  };
 }
 
-function seed(): Seller[] {
-  const data: Seller[] = [
-    {
-      id: crypto.randomUUID(),
-      name: "Lilia Maria De Souza Guimaraes",
-      cpf: "123.456.789-00",
-      matricula: "22161",
-      role: "Vendedor(a) Interno",
-      equipmentSerial: "25039524702301",
-      status: "ativo",
-      admissionDate: "2025-04-10",
-      notes: "",
-      createdAt: Date.now() - 86400000 * 30,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Johaby Pereira Dos Santos Menezes",
-      cpf: "031.032.011-92",
-      matricula: "22160",
-      role: "Vendedor(a) Interno",
-      equipmentSerial: "25039524702375",
-      status: "ativo",
-      admissionDate: "2025-05-01",
-      notes: "mobile entregue dia 25/05/2026",
-      createdAt: Date.now() - 86400000 * 20,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Marilia Eduarda Duraes Da Silva",
-      cpf: "222.333.444-55",
-      matricula: "22162",
-      role: "Vendedor(a) Interno",
-      status: "aviso",
-      notes: "Atraso em prestação de contas.",
-      createdAt: Date.now() - 86400000 * 12,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "SIMONE TAVARES DE SOUZA",
-      cpf: "555.666.777-88",
-      matricula: "21622",
-      role: "Vendedor(a) Interno",
-      status: "inativo",
-      exitDate: "2026-03-01",
-      notes: "Desligada em 03/2026.",
-      createdAt: Date.now() - 86400000 * 90,
-    },
-  ];
-  localStorage.setItem(KEY, JSON.stringify(data));
-  return data;
+function toRow(s: Partial<Omit<Seller, "id" | "createdAt">>) {
+  const row: Record<string, unknown> = {};
+  if (s.name !== undefined) row.name = s.name;
+  if (s.cpf !== undefined) row.cpf = s.cpf;
+  if (s.matricula !== undefined) row.matricula = s.matricula;
+  if (s.role !== undefined) row.role = s.role;
+  if ("equipmentSerial" in s) row.equipment_serial = s.equipmentSerial ?? null;
+  if (s.status !== undefined) row.status = s.status;
+  if ("admissionDate" in s) row.admission_date = s.admissionDate || null;
+  if ("exitDate" in s) row.exit_date = s.exitDate || null;
+  if ("notes" in s) row.notes = s.notes ?? null;
+  return row;
+}
+
+function friendlyError(err: unknown, fallback: string) {
+  const msg = (err as { message?: string } | null)?.message ?? "";
+  if (/duplicate key|unique/i.test(msg)) {
+    if (/cpf/i.test(msg)) return "Já existe um vendedor com este CPF.";
+    if (/matricula/i.test(msg)) return "Já existe um vendedor com esta matrícula.";
+    if (/equipment/i.test(msg)) return "Este número de série já está em uso.";
+    return "Registro duplicado.";
+  }
+  return msg || fallback;
 }
 
 export function useSellers() {
-  const [sellers, setSellers] = useState<Seller[]>([]);
-  const [ready, setReady] = useState(false);
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    setSellers(load());
-    setReady(true);
-  }, []);
+  const query = useQuery({
+    queryKey: ["sellers"],
+    queryFn: async (): Promise<Seller[]> => {
+      const { data, error } = await supabase
+        .from("sellers")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(fromRow);
+    },
+  });
 
-  const persist = useCallback((next: Seller[]) => {
-    setSellers(next);
-    localStorage.setItem(KEY, JSON.stringify(next));
-  }, []);
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["sellers"] });
 
-  const addSeller = (s: Omit<Seller, "id" | "createdAt">) => {
-    const seller: Seller = { ...s, id: crypto.randomUUID(), createdAt: Date.now() };
-    persist([seller, ...sellers]);
+  const addMut = useMutation({
+    mutationFn: async (s: Omit<Seller, "id" | "createdAt">) => {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData.user) throw new Error("Você precisa estar logado.");
+      const { error } = await supabase
+        .from("sellers")
+        .insert({ ...toRow(s), user_id: userData.user.id } as Database["public"]["Tables"]["sellers"]["Insert"]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vendedor cadastrado.");
+      invalidate();
+    },
+    onError: (e) => toast.error(friendlyError(e, "Erro ao cadastrar.")),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Seller> }) => {
+      const { error } = await supabase.from("sellers").update(toRow(patch)).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vendedor atualizado.");
+      invalidate();
+    },
+    onError: (e) => toast.error(friendlyError(e, "Erro ao atualizar.")),
+  });
+
+  const removeMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("sellers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vendedor excluído.");
+      invalidate();
+    },
+    onError: (e) => toast.error(friendlyError(e, "Erro ao excluir.")),
+  });
+
+  const addSeller = useCallback(
+    (s: Omit<Seller, "id" | "createdAt">) => addMut.mutate(s),
+    [addMut],
+  );
+  const updateSeller = useCallback(
+    (id: string, patch: Partial<Seller>) => updateMut.mutate({ id, patch }),
+    [updateMut],
+  );
+  const removeSeller = useCallback((id: string) => removeMut.mutate(id), [removeMut]);
+
+  return {
+    sellers: query.data ?? [],
+    ready: !query.isLoading,
+    addSeller,
+    updateSeller,
+    removeSeller,
   };
-
-  const updateSeller = (id: string, patch: Partial<Seller>) => {
-    persist(sellers.map((s) => (s.id === id ? { ...s, ...patch } : s)));
-  };
-
-  const removeSeller = (id: string) => persist(sellers.filter((s) => s.id !== id));
-
-  return { sellers, ready, addSeller, updateSeller, removeSeller };
 }
 
 export const statusLabel: Record<SellerStatus, string> = {
