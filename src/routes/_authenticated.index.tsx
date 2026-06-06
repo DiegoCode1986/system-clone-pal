@@ -88,7 +88,14 @@ const statusDot: Record<SellerStatus, string> = {
 type Filter = "todos" | SellerStatus;
 
 function Index() {
+  const navigate = useNavigate();
   const { sellers, ready, addSeller, updateSeller, removeSeller } = useSellers();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todos");
