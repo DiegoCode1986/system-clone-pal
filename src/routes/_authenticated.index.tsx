@@ -142,7 +142,7 @@ function Index() {
             <Button variant="outline" onClick={() => window.print()}>
               <Printer className="mr-2 h-4 w-4" /> Imprimir
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => navigate({ to: "/termo-mobile" })}>
               <FileText className="mr-2 h-4 w-4" /> Termo Mobile
             </Button>
             <Button variant="ghost" onClick={handleSignOut}>
