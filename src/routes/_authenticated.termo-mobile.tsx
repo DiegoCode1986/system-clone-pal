@@ -180,7 +180,11 @@ function TermoMobile() {
           </ol>
 
           <p className="mb-12 text-sm">
-            Valparaíso de Goiás, ____ de ______________ de ______.
+            Valparaíso de Goiás, {(() => {
+              const d = new Date();
+              const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+              return `${String(d.getDate()).padStart(2,"0")} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+            })()}.
           </p>
 
           <div className="grid grid-cols-1 gap-12 pt-8 sm:grid-cols-2">
