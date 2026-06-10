@@ -141,7 +141,7 @@ function Index() {
             <Button onClick={() => setCreating(true)}>
               <UserPlus className="mr-2 h-4 w-4" /> Novo Vendedor
             </Button>
-            <Button variant="outline" onClick={() => window.print()}>
+            <Button variant="outline" onClick={() => setPrintOpen(true)}>
               <Printer className="mr-2 h-4 w-4" /> Imprimir
             </Button>
             <Button variant="outline" onClick={() => navigate({ to: "/termo-mobile" })}>
