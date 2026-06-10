@@ -103,6 +103,7 @@ function Index() {
   const [editing, setEditing] = useState<Seller | null>(null);
   const [creating, setCreating] = useState(false);
   const [toDelete, setToDelete] = useState<Seller | null>(null);
+  const [printOpen, setPrintOpen] = useState(false);
 
   const filtered = useMemo(() => {
     return sellers.filter((s) => {
