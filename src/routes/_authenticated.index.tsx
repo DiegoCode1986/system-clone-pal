@@ -490,3 +490,126 @@ function SellerFormDialog({
     </DialogContent>
   );
 }
+
+function PrintReportDialog({
+  sellers,
+  onClose,
+}: {
+  sellers: Seller[];
+  onClose: () => void;
+}) {
+  const [includeAtivo, setIncludeAtivo] = useState(true);
+  const [includeAviso, setIncludeAviso] = useState(true);
+  const [includeInativo, setIncludeInativo] = useState(true);
+
+  const counts = useMemo(
+    () => ({
+      ativo: sellers.filter((s) => s.status === "ativo").length,
+      aviso: sellers.filter((s) => s.status === "aviso").length,
+      inativo: sellers.filter((s) => s.status === "inativo").length,
+    }),
+    [sellers],
+  );
+
+  const selected = useMemo(() => {
+    return sellers.filter((s) => {
+      if (s.status === "ativo") return includeAtivo;
+      if (s.status === "aviso") return includeAviso;
+      if (s.status === "inativo") return includeInativo;
+      return false;
+    });
+  }, [sellers, includeAtivo, includeAviso, includeInativo]);
+
+  function escapeHtml(s: string) {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+  }
+
+  function handlePrint() {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const dateStr = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    const rows = selected
+      .map(
+        (s) => `
+          <tr>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${escapeHtml(s.matricula)}</td>
+            <td>${escapeHtml(s.cpf)}</td>
+            <td>${escapeHtml(s.role)}</td>
+            <td>${escapeHtml(s.equipmentSerial ?? "")}</td>
+            <td>${escapeHtml(statusLabel[s.status])}</td>
+          </tr>`,
+      )
+      .join("");
+
+    const html = `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de Vendedores</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;color:#111;margin:32px;}
+  h1{text-align:center;margin:0 0 4px;font-size:22px}
+  .sub{text-align:center;color:#555;margin-bottom:24px;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead th{text-align:left;border-bottom:2px solid #333;padding:8px 6px;font-weight:600}
+  tbody td{padding:10px 6px;border-bottom:1px solid #e5e5e5}
+  tbody tr:nth-child(even){background:#fafafa}
+  @media print{body{margin:12mm}}
+</style></head><body>
+  <h1>Relatório de Vendedores</h1>
+  <div class="sub">Gerado em ${dateStr} às ${timeStr}</div>
+  <table>
+    <thead><tr>
+      <th>Nome</th><th>Matrícula</th><th>CPF</th><th>Função/Setor</th><th>Nº Série</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <script>window.onload=()=>{window.focus();window.print();}</script>
+</body></html>`;
+
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) return;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    onClose();
+  }
+
+  return (
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Imprimir Relatório</DialogTitle>
+      </DialogHeader>
+      <div className="grid gap-3">
+        <p className="text-sm font-medium">Selecione os status para incluir:</p>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={includeAtivo} onCheckedChange={(v) => setIncludeAtivo(!!v)} />
+          <span className="h-2 w-2 rounded-full bg-success" />
+          Ativos ({counts.ativo})
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={includeAviso} onCheckedChange={(v) => setIncludeAviso(!!v)} />
+          <span className="h-2 w-2 rounded-full bg-warning" />
+          Em Aviso ({counts.aviso})
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={includeInativo} onCheckedChange={(v) => setIncludeInativo(!!v)} />
+          <span className="h-2 w-2 rounded-full bg-destructive" />
+          Inativos ({counts.inativo})
+        </label>
+        <div className="rounded-md bg-muted px-3 py-2 text-center text-sm text-muted-foreground">
+          <strong className="text-foreground">{selected.length}</strong> vendedor(es) serão incluídos no relatório
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button onClick={handlePrint} disabled={selected.length === 0}>
+          <Printer className="mr-2 h-4 w-4" /> Imprimir
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
