@@ -269,6 +269,13 @@ function Index() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={printOpen} onOpenChange={setPrintOpen}>
+        <PrintReportDialog
+          sellers={sellers}
+          onClose={() => setPrintOpen(false)}
+        />
+      </Dialog>
     </div>
   );
 }
