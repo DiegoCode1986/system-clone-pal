@@ -10,6 +10,7 @@ import {
   UserPlus,
   Printer,
   FileText,
+  History,
   Search,
   Pencil,
   Trash2,
@@ -143,6 +144,9 @@ function Index() {
             </Button>
             <Button variant="outline" onClick={() => setPrintOpen(true)}>
               <Printer className="mr-2 h-4 w-4" /> Imprimir
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/historico-mobile" })}>
+              <History className="mr-2 h-4 w-4" /> Histórico Mobile
             </Button>
             <Button variant="outline" onClick={() => navigate({ to: "/termo-mobile" })}>
               <FileText className="mr-2 h-4 w-4" /> Termo Mobile
