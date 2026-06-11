@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedTermoMobileRouteImport } from './routes/_authenticated.termo-mobile'
+import { Route as AuthenticatedHistoricoMobileRouteImport } from './routes/_authenticated.historico-mobile'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -34,14 +35,22 @@ const AuthenticatedTermoMobileRoute =
     path: '/termo-mobile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHistoricoMobileRoute =
+  AuthenticatedHistoricoMobileRouteImport.update({
+    id: '/historico-mobile',
+    path: '/historico-mobile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/termo-mobile': typeof AuthenticatedTermoMobileRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/termo-mobile': typeof AuthenticatedTermoMobileRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -49,18 +58,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/_authenticated/termo-mobile': typeof AuthenticatedTermoMobileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/termo-mobile'
+  fullPaths: '/' | '/auth' | '/historico-mobile' | '/termo-mobile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/termo-mobile' | '/'
+  to: '/auth' | '/historico-mobile' | '/termo-mobile' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/historico-mobile'
     | '/_authenticated/termo-mobile'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -100,15 +111,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTermoMobileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/historico-mobile': {
+      id: '/_authenticated/historico-mobile'
+      path: '/historico-mobile'
+      fullPath: '/historico-mobile'
+      preLoaderRoute: typeof AuthenticatedHistoricoMobileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHistoricoMobileRoute: typeof AuthenticatedHistoricoMobileRoute
   AuthenticatedTermoMobileRoute: typeof AuthenticatedTermoMobileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHistoricoMobileRoute: AuthenticatedHistoricoMobileRoute,
   AuthenticatedTermoMobileRoute: AuthenticatedTermoMobileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
