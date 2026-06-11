@@ -10,6 +10,7 @@ import {
   UserPlus,
   Printer,
   FileText,
+  History,
   Search,
   Pencil,
   Trash2,
