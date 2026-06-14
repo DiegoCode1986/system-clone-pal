@@ -511,11 +511,14 @@ function SellerFormDialog({
 
 function PrintReportDialog({
   sellers,
+  filialName,
   onClose,
 }: {
   sellers: Seller[];
+  filialName: string;
   onClose: () => void;
 }) {
+
   const [includeAtivo, setIncludeAtivo] = useState(true);
   const [includeAviso, setIncludeAviso] = useState(true);
   const [includeInativo, setIncludeInativo] = useState(true);
