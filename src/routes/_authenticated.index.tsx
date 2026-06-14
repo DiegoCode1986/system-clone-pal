@@ -11,6 +11,7 @@ import {
   Printer,
   FileText,
   History,
+  ClipboardList,
   Search,
   Pencil,
   Trash2,
@@ -147,6 +148,9 @@ function Index() {
             </Button>
             <Button variant="outline" onClick={() => navigate({ to: "/historico-mobile" })}>
               <History className="mr-2 h-4 w-4" /> Histórico Mobile
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/controle-entrega" })}>
+              <ClipboardList className="mr-2 h-4 w-4" /> Controle de Entrega
             </Button>
             <Button variant="outline" onClick={() => navigate({ to: "/termo-mobile" })}>
               <FileText className="mr-2 h-4 w-4" /> Termo Mobile

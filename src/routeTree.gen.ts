@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedTermoMobileRouteImport } from './routes/_authenticated.termo-mobile'
 import { Route as AuthenticatedHistoricoMobileRouteImport } from './routes/_authenticated.historico-mobile'
+import { Route as AuthenticatedControleEntregaRouteImport } from './routes/_authenticated.controle-entrega'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -41,15 +42,23 @@ const AuthenticatedHistoricoMobileRoute =
     path: '/historico-mobile',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedControleEntregaRoute =
+  AuthenticatedControleEntregaRouteImport.update({
+    id: '/controle-entrega',
+    path: '/controle-entrega',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/controle-entrega': typeof AuthenticatedControleEntregaRoute
   '/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/termo-mobile': typeof AuthenticatedTermoMobileRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/controle-entrega': typeof AuthenticatedControleEntregaRoute
   '/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/termo-mobile': typeof AuthenticatedTermoMobileRoute
   '/': typeof AuthenticatedIndexRoute
@@ -58,19 +67,31 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/controle-entrega': typeof AuthenticatedControleEntregaRoute
   '/_authenticated/historico-mobile': typeof AuthenticatedHistoricoMobileRoute
   '/_authenticated/termo-mobile': typeof AuthenticatedTermoMobileRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/historico-mobile' | '/termo-mobile'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/controle-entrega'
+    | '/historico-mobile'
+    | '/termo-mobile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/historico-mobile' | '/termo-mobile' | '/'
+  to:
+    | '/auth'
+    | '/controle-entrega'
+    | '/historico-mobile'
+    | '/termo-mobile'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/controle-entrega'
     | '/_authenticated/historico-mobile'
     | '/_authenticated/termo-mobile'
     | '/_authenticated/'
@@ -118,16 +139,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoricoMobileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/controle-entrega': {
+      id: '/_authenticated/controle-entrega'
+      path: '/controle-entrega'
+      fullPath: '/controle-entrega'
+      preLoaderRoute: typeof AuthenticatedControleEntregaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedControleEntregaRoute: typeof AuthenticatedControleEntregaRoute
   AuthenticatedHistoricoMobileRoute: typeof AuthenticatedHistoricoMobileRoute
   AuthenticatedTermoMobileRoute: typeof AuthenticatedTermoMobileRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedControleEntregaRoute: AuthenticatedControleEntregaRoute,
   AuthenticatedHistoricoMobileRoute: AuthenticatedHistoricoMobileRoute,
   AuthenticatedTermoMobileRoute: AuthenticatedTermoMobileRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
@@ -143,13 +173,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
