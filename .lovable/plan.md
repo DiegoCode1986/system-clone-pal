@@ -1,22 +1,37 @@
-# Relatório de Vendedores em PDF com filtro
+# Suporte a múltiplas filiais
 
-## O que será feito
+## Filiais
 
-Ao clicar em **Imprimir** no `_authenticated.index.tsx`, abrir um modal "Imprimir Relatório" com checkboxes:
-- Ativos (N)
-- Em Aviso (N)
-- Inativos (N)
+MARINGÁ, VALPARAÍSO, RECIFE, FORTALEZA, GOIÂNIA, SÃO LUÍS, ARACAJU.
 
-Mostrando "X vendedor(es) serão incluídos no relatório" e botões Cancelar / Imprimir.
+## Banco de dados
 
-Ao clicar Imprimir, abrir uma janela com layout idêntico ao PDF modelo (cabeçalho "Relatório de Vendedores", "Gerado em DD/MM/AAAA às HH:MM:SS", tabela com colunas: Nome, Matrícula, CPF, Função/Setor, Nº Série, Status) e disparar `window.print()` para o usuário salvar como PDF.
+- Novo enum `filial` com as 7 opções.
+- Nova tabela `profiles(user_id, filial)` — guarda a filial escolhida pelo usuário no cadastro.
+- Coluna `filial` na tabela `sellers` (NOT NULL).
+- Trigger `before insert` em `sellers`: se `filial` não vier preenchida, preenche automaticamente com a filial do `profiles` do usuário logado.
+- Índice único `(filial, equipment_serial)` em vez do escopo atual — assim o mesmo serial pode existir em filiais diferentes, mas não duplicado dentro da mesma filial entre vendedores ativos. (Mantém a regra "serial em uso" só por filial.)
+- RLS continua por `user_id`, sem mudança de policy.
+
+## Tela de cadastro (`/auth`)
+
+- Adicionar campo **Filial** (select) na aba **Cadastrar** — obrigatório.
+- Após `signUp`, inserir linha em `profiles` com a filial escolhida.
+- Login não muda (continua só matrícula + senha).
+
+## Vendedores
+
+- `useSellers()` passa a filtrar pela filial do usuário logado (via `profiles`) — cada login só enxerga seus próprios vendedores da sua filial.
+- Form de cadastro de vendedor não pede filial (herda do perfil).
+
+## Documentos impressos
+
+- Cabeçalho do **Relatório de Vendedores**, **Histórico Mobile**, **Termo Mobile** e **Controle de Entrega** passa a exibir `Filial: <NOME>` ao lado da data.
 
 ## Detalhes técnicos
 
-- Novo `Dialog` no `_authenticated.index.tsx` controlado por estado `printOpen`.
-- Estado com 3 booleanos (ativo/aviso/inativo) — todos marcados por padrão.
-- Contagem dinâmica a partir de `sellers`.
-- Geração do relatório: abrir `window.open()` com HTML inline (tabela + estilos de impressão) e chamar `print()` — isso evita imprimir a UI atual e funciona como "Salvar como PDF" no diálogo do navegador.
-- O botão "Imprimir" existente passa a abrir o modal em vez de `window.print()` direto.
+- Migration cria enum + tabela `profiles` + coluna `filial` em `sellers` + trigger de auto-preenchimento + drop do unique antigo de `equipment_serial` e criação do novo composto.
+- Para vendedores existentes sem filial: preencher com `MARINGA` como default (o usuário pode editar depois).
+- Hook novo `useProfile()` retorna a filial atual (cacheada via React Query) e é consumido pelas páginas de impressão.
 
-Sem mudanças de schema/backend.
+Sem outras mudanças funcionais.
