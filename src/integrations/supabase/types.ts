@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          filial: Database["public"]["Enums"]["filial"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filial: Database["public"]["Enums"]["filial"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filial?: Database["public"]["Enums"]["filial"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sellers: {
         Row: {
           admission_date: string | null
@@ -21,6 +42,7 @@ export type Database = {
           created_at: string
           equipment_serial: string | null
           exit_date: string | null
+          filial: Database["public"]["Enums"]["filial"]
           id: string
           matricula: string
           name: string
@@ -36,6 +58,7 @@ export type Database = {
           created_at?: string
           equipment_serial?: string | null
           exit_date?: string | null
+          filial?: Database["public"]["Enums"]["filial"]
           id?: string
           matricula: string
           name: string
@@ -51,6 +74,7 @@ export type Database = {
           created_at?: string
           equipment_serial?: string | null
           exit_date?: string | null
+          filial?: Database["public"]["Enums"]["filial"]
           id?: string
           matricula?: string
           name?: string
@@ -70,6 +94,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      filial:
+        | "MARINGA"
+        | "VALPARAISO"
+        | "RECIFE"
+        | "FORTALEZA"
+        | "GOIANIA"
+        | "SAO_LUIS"
+        | "ARACAJU"
       seller_status: "ativo" | "aviso" | "inativo"
     }
     CompositeTypes: {
@@ -198,6 +230,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      filial: [
+        "MARINGA",
+        "VALPARAISO",
+        "RECIFE",
+        "FORTALEZA",
+        "GOIANIA",
+        "SAO_LUIS",
+        "ARACAJU",
+      ],
       seller_status: ["ativo", "aviso", "inativo"],
     },
   },
