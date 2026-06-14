@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSellers, statusLabel, type Seller } from "@/lib/sellers-store";
+import { useProfile } from "@/lib/profile-store";
+import { filialLabel } from "@/lib/filiais";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/historico-mobile")({
   head: () => ({
@@ -23,8 +26,11 @@ const statusBadge: Record<Seller["status"], string> = {
 function HistoricoMobile() {
   const navigate = useNavigate();
   const { sellers } = useSellers();
+  const { filial } = useProfile();
+  const filialName = filial ? filialLabel[filial] : "";
   const [serial, setSerial] = useState("");
   const [searched, setSearched] = useState<string | null>(null);
+
 
   const matches = searched
     ? sellers
@@ -50,8 +56,10 @@ function HistoricoMobile() {
             <h1 className="text-3xl font-bold tracking-tight">Histórico de Mobile</h1>
             <p className="text-sm text-muted-foreground">
               Digite o serial para ver quem usou o equipamento
+              {filialName && <> · Filial <strong>{filialName}</strong></>}
             </p>
           </div>
+
         </div>
 
         <div className="mb-6 flex gap-2">
