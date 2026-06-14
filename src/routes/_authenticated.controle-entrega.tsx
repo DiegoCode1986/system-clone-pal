@@ -4,6 +4,9 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSellers, type Seller } from "@/lib/sellers-store";
+import { useProfile } from "@/lib/profile-store";
+import { filialLabel } from "@/lib/filiais";
+
 
 export const Route = createFileRoute("/_authenticated/controle-entrega")({
   head: () => ({
@@ -25,7 +28,7 @@ function escapeHtml(s: string) {
   );
 }
 
-function buildPrintHtml(active: Seller[]) {
+function buildPrintHtml(active: Seller[], filialName: string) {
   const rows = active
     .map(
       (s) => `
@@ -70,7 +73,8 @@ function buildPrintHtml(active: Seller[]) {
   .footer td{text-align:left;padding:6px;font-weight:bold}
 </style></head><body>
   <h1>TERMO DE RESPONSABILIDADE E USO DE EQUIPAMENTO</h1>
-  <h2>COLETOR DE DADOS ZEBRA TC 22</h2>
+  <h2>COLETOR DE DADOS ZEBRA TC 22${filialName ? ` — FILIAL ${escapeHtml(filialName)}` : ""}</h2>
+
   <table>
     <thead>${header}</thead>
     <tbody>${rows}</tbody>
@@ -88,6 +92,8 @@ function buildPrintHtml(active: Seller[]) {
 function ControleEntregaPage() {
   const navigate = useNavigate();
   const { sellers, ready } = useSellers();
+  const { filial } = useProfile();
+  const filialName = filial ? filialLabel[filial] : "";
 
   const active = useMemo(
     () =>
@@ -101,9 +107,10 @@ function ControleEntregaPage() {
     const w = window.open("", "_blank", "width=1100,height=800");
     if (!w) return;
     w.document.open();
-    w.document.write(buildPrintHtml(active));
+    w.document.write(buildPrintHtml(active, filialName));
     w.document.close();
   }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,8 +124,10 @@ function ControleEntregaPage() {
               <h1 className="text-2xl font-bold tracking-tight">Controle de Entrega</h1>
               <p className="text-sm text-muted-foreground">
                 Termo de uso diário do coletor — apenas vendedores ativos
+                {filialName && <> · Filial <strong>{filialName}</strong></>}
               </p>
             </div>
+
           </div>
           <Button onClick={handlePrint} disabled={!ready || active.length === 0}>
             <Printer className="mr-2 h-4 w-4" /> Imprimir
