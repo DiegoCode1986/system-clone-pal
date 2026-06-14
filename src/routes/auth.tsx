@@ -7,6 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FILIAIS, filialLabel, type Filial } from "@/lib/filiais";
+
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -28,7 +37,9 @@ function AuthPage() {
   const navigate = useNavigate();
   const [matricula, setMatricula] = useState("");
   const [password, setPassword] = useState("");
+  const [filial, setFilial] = useState<Filial | "">("");
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -57,16 +68,33 @@ function AuthPage() {
     if (!isValidMatricula(matricula)) {
       return toast.error("A matrícula deve ter 5 dígitos.");
     }
+    if (!filial) {
+      return toast.error("Selecione a sua filial.");
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: matriculaToEmail(matricula),
       password,
       options: { emailRedirectTo: window.location.origin },
     });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    const userId = data.user?.id;
+    if (userId) {
+      const { error: profErr } = await supabase
+        .from("profiles")
+        .insert({ user_id: userId, filial });
+      if (profErr) {
+        setLoading(false);
+        return toast.error(profErr.message);
+      }
+    }
     setLoading(false);
-    if (error) return toast.error(error.message);
     toast.success("Conta criada. Faça login.");
   }
+
 
   function handleMatriculaChange(value: string) {
     setMatricula(value.replace(/\D/g, "").slice(0, 5));
@@ -124,6 +152,22 @@ function AuthPage() {
                   <Label htmlFor="pw-s">Senha</Label>
                   <Input id="pw-s" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="filial-s">Filial</Label>
+                  <Select value={filial} onValueChange={(v) => setFilial(v as Filial)}>
+                    <SelectTrigger id="filial-s">
+                      <SelectValue placeholder="Selecione sua filial" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FILIAIS.map((f) => (
+                        <SelectItem key={f} value={f}>
+                          {filialLabel[f]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <Button type="submit" disabled={loading}>{loading ? "Criando..." : "Criar conta"}</Button>
               </form>
             </TabsContent>

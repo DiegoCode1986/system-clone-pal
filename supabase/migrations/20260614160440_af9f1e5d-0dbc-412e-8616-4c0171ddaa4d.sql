@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.set_seller_filial() FROM PUBLIC, anon, authenticated;

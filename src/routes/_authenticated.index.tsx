@@ -23,6 +23,9 @@ import {
   type SellerStatus,
   type Seller,
 } from "@/lib/sellers-store";
+import { useProfile } from "@/lib/profile-store";
+import { filialLabel } from "@/lib/filiais";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -93,11 +96,14 @@ type Filter = "todos" | SellerStatus;
 function Index() {
   const navigate = useNavigate();
   const { sellers, ready, addSeller, updateSeller, removeSeller } = useSellers();
+  const { filial } = useProfile();
+  const filialName = filial ? filialLabel[filial] : "";
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
+
 
 
   const [query, setQuery] = useState("");
@@ -137,8 +143,10 @@ function Index() {
             <h1 className="text-3xl font-bold tracking-tight">Vendedores</h1>
             <p className="text-sm text-muted-foreground">
               Gestão de vendedores e equipamentos
+              {filialName && <> · Filial <strong>{filialName}</strong></>}
             </p>
           </div>
+
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => setCreating(true)}>
               <UserPlus className="mr-2 h-4 w-4" /> Novo Vendedor
@@ -281,9 +289,11 @@ function Index() {
       <Dialog open={printOpen} onOpenChange={setPrintOpen}>
         <PrintReportDialog
           sellers={sellers}
+          filialName={filialName}
           onClose={() => setPrintOpen(false)}
         />
       </Dialog>
+
     </div>
   );
 }
@@ -501,11 +511,14 @@ function SellerFormDialog({
 
 function PrintReportDialog({
   sellers,
+  filialName,
   onClose,
 }: {
   sellers: Seller[];
+  filialName: string;
   onClose: () => void;
 }) {
+
   const [includeAtivo, setIncludeAtivo] = useState(true);
   const [includeAviso, setIncludeAviso] = useState(true);
   const [includeInativo, setIncludeInativo] = useState(true);
@@ -568,7 +581,9 @@ function PrintReportDialog({
   @media print{body{margin:12mm}}
 </style></head><body>
   <h1>Relatório de Vendedores</h1>
+  ${filialName ? `<div class="sub"><strong>Filial: ${escapeHtml(filialName)}</strong></div>` : ""}
   <div class="sub">Gerado em ${dateStr} às ${timeStr}</div>
+
   <table>
     <thead><tr>
       <th>Nome</th><th>Matrícula</th><th>CPF</th><th>Função/Setor</th><th>Nº Série</th><th>Status</th>

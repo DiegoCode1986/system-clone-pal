@@ -12,6 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSellers } from "@/lib/sellers-store";
+import { useProfile } from "@/lib/profile-store";
+import { filialLabel } from "@/lib/filiais";
+
 
 export const Route = createFileRoute("/_authenticated/termo-mobile")({
   head: () => ({
@@ -23,8 +26,11 @@ export const Route = createFileRoute("/_authenticated/termo-mobile")({
 function TermoMobile() {
   const navigate = useNavigate();
   const { sellers } = useSellers();
+  const { filial } = useProfile();
+  const filialName = filial ? filialLabel[filial] : "";
   const [sellerId, setSellerId] = useState<string>("");
   const [serial, setSerial] = useState<string>("");
+
 
   const seller = useMemo(
     () => sellers.find((s) => s.id === sellerId),
@@ -83,7 +89,9 @@ function TermoMobile() {
 
           <h1 className="mb-6 text-center text-xl font-bold">
             TERMO DE AUTORIZAÇÃO DE USO DE EQUIPAMENTO
+            {filialName && <div className="mt-1 text-sm font-semibold">FILIAL {filialName}</div>}
           </h1>
+
 
           <p className="mb-6 text-sm leading-relaxed">
             A <strong>TECIDOS E ARMARINHOS MIGUEL BARTOLOMEU S/A</strong>,
