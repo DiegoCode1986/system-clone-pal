@@ -7,6 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FILIAIS, filialLabel, type Filial } from "@/lib/filiais";
+
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -28,7 +37,9 @@ function AuthPage() {
   const navigate = useNavigate();
   const [matricula, setMatricula] = useState("");
   const [password, setPassword] = useState("");
+  const [filial, setFilial] = useState<Filial | "">("");
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
