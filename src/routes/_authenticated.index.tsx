@@ -581,7 +581,9 @@ function PrintReportDialog({
   @media print{body{margin:12mm}}
 </style></head><body>
   <h1>Relatório de Vendedores</h1>
+  ${filialName ? `<div class="sub"><strong>Filial: ${escapeHtml(filialName)}</strong></div>` : ""}
   <div class="sub">Gerado em ${dateStr} às ${timeStr}</div>
+
   <table>
     <thead><tr>
       <th>Nome</th><th>Matrícula</th><th>CPF</th><th>Função/Setor</th><th>Nº Série</th><th>Status</th>
