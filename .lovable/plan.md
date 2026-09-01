@@ -1,37 +1,18 @@
-# Suporte a múltiplas filiais
+# Anexo do contrato assinado (imagem) no cadastro do vendedor
 
-## Filiais
+Adicionar, no formulário "Editar vendedor", logo abaixo do campo **Observações**, um campo para anexar a imagem do contrato assinado, guardado com segurança e disponível para consulta futura.
 
-MARINGÁ, VALPARAÍSO, RECIFE, FORTALEZA, GOIÂNIA, SÃO LUÍS, ARACAJU.
+## Como vai funcionar
 
-## Banco de dados
-
-- Novo enum `filial` com as 7 opções.
-- Nova tabela `profiles(user_id, filial)` — guarda a filial escolhida pelo usuário no cadastro.
-- Coluna `filial` na tabela `sellers` (NOT NULL).
-- Trigger `before insert` em `sellers`: se `filial` não vier preenchida, preenche automaticamente com a filial do `profiles` do usuário logado.
-- Índice único `(filial, equipment_serial)` em vez do escopo atual — assim o mesmo serial pode existir em filiais diferentes, mas não duplicado dentro da mesma filial entre vendedores ativos. (Mantém a regra "serial em uso" só por filial.)
-- RLS continua por `user_id`, sem mudança de policy.
-
-## Tela de cadastro (`/auth`)
-
-- Adicionar campo **Filial** (select) na aba **Cadastrar** — obrigatório.
-- Após `signUp`, inserir linha em `profiles` com a filial escolhida.
-- Login não muda (continua só matrícula + senha).
-
-## Vendedores
-
-- `useSellers()` passa a filtrar pela filial do usuário logado (via `profiles`) — cada login só enxerga seus próprios vendedores da sua filial.
-- Form de cadastro de vendedor não pede filial (herda do perfil).
-
-## Documentos impressos
-
-- Cabeçalho do **Relatório de Vendedores**, **Histórico Mobile**, **Termo Mobile** e **Controle de Entrega** passa a exibir `Filial: <NOME>` ao lado da data.
+- Campo "Contrato assinado" com botão para enviar uma imagem (JPG, PNG ou WEBP, até 10 MB).
+- Ao selecionar, a imagem é enviada e aparece uma miniatura com opções **Ver** (abre em nova aba) e **Remover**.
+- Se o vendedor já tiver contrato anexado, a miniatura aparece ao abrir a edição.
+- O anexo também fica disponível no cadastro de um novo vendedor (enviado após salvar).
+- Cada usuário só enxerga e gerencia os contratos dos próprios vendedores.
 
 ## Detalhes técnicos
 
-- Migration cria enum + tabela `profiles` + coluna `filial` em `sellers` + trigger de auto-preenchimento + drop do unique antigo de `equipment_serial` e criação do novo composto.
-- Para vendedores existentes sem filial: preencher com `MARINGA` como default (o usuário pode editar depois).
-- Hook novo `useProfile()` retorna a filial atual (cacheada via React Query) e é consumido pelas páginas de impressão.
-
-Sem outras mudanças funcionais.
+1. **Armazenamento**: criar bucket privado `contratos` (limite de 10 MB) com políticas em `storage.objects` restringindo leitura/escrita/exclusão ao dono, usando o caminho `<user_id>/<seller_id>.<ext>`.
+2. **Banco**: migration adicionando `contract_path text` (nullable) em `public.sellers`.
+3. **Store** (`src/lib/sellers-store.ts`): mapear `contract_path` → `contractPath` no `fromRow`/`toRow`; adicionar helpers `uploadContract(sellerId, file)` (upload + update da coluna), `removeContract(seller)` e `getContractUrl(path)` via URL assinada.
+4. **UI** (`src/routes/_authenticated.index.tsx`): no `SellerForm`, abaixo de Observações, incluir input de arquivo com validação de tipo/tamanho, estado de envio, pré-visualização por URL assinada e ação de remover; toasts de sucesso/erro em português.
