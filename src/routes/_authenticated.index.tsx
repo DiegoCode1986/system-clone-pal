@@ -480,6 +480,66 @@ function SellerFormDialog({
           <Label>Observações</Label>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
         </div>
+
+        <div className="grid gap-2">
+          <Label>Contrato Assinado (imagem)</Label>
+          {previewUrl ? (
+            <div className="flex items-center gap-3 rounded-md border p-2">
+              <img
+                src={previewUrl}
+                alt="Prévia do contrato assinado"
+                className="h-16 w-16 rounded object-cover"
+              />
+              <div className="flex flex-1 flex-col gap-1 text-sm">
+                <span className="text-muted-foreground">
+                  {contractFile ? contractFile.name : "Contrato anexado"}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.open(previewUrl, "_blank", "noopener")}
+                  >
+                    Ver
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive"
+                    onClick={() => {
+                      setContractFile(null);
+                      setRemoveContract(true);
+                      setPreviewUrl(null);
+                    }}
+                  >
+                    Remover
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const err = validateContractFile(file);
+                if (err) {
+                  toast.error(err);
+                  e.target.value = "";
+                  return;
+                }
+                setContractFile(file);
+                setRemoveContract(false);
+                setPreviewUrl(URL.createObjectURL(file));
+              }}
+            />
+          )}
+          <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP — até 10 MB.</p>
+        </div>
       </div>
 
       <DialogFooter>
@@ -489,22 +549,26 @@ function SellerFormDialog({
         <Button
           disabled={!valid}
           onClick={() =>
-            onSubmit({
-              name: name.trim(),
-              cpf: cpf.trim(),
-              matricula: matricula.trim(),
-              role: role.trim(),
-              equipmentSerial: equipmentSerial.trim() || undefined,
-              status,
-              admissionDate: admissionDate || undefined,
-              exitDate: exitDate || undefined,
-              notes: notes.trim() || undefined,
-            })
+            onSubmit(
+              {
+                name: name.trim(),
+                cpf: cpf.trim(),
+                matricula: matricula.trim(),
+                role: role.trim(),
+                equipmentSerial: equipmentSerial.trim() || undefined,
+                status,
+                admissionDate: admissionDate || undefined,
+                exitDate: exitDate || undefined,
+                notes: notes.trim() || undefined,
+              },
+              { contractFile, removeContract },
+            )
           }
         >
           {mode === "edit" ? "Salvar Alterações" : "Cadastrar"}
         </Button>
       </DialogFooter>
+
     </DialogContent>
   );
 }
