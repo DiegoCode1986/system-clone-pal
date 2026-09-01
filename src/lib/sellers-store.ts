@@ -118,13 +118,29 @@ export function useSellers() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["sellers"] });
 
   const addMut = useMutation({
-    mutationFn: async (s: Omit<Seller, "id" | "createdAt">) => {
+    mutationFn: async ({
+      seller: s,
+      contractFile,
+    }: {
+      seller: Omit<Seller, "id" | "createdAt">;
+      contractFile?: File | null;
+    }) => {
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr || !userData.user) throw new Error("Você precisa estar logado.");
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("sellers")
-        .insert({ ...toRow(s), user_id: userData.user.id } as Database["public"]["Tables"]["sellers"]["Insert"]);
+        .insert({ ...toRow(s), user_id: userData.user.id } as Database["public"]["Tables"]["sellers"]["Insert"])
+        .select("id")
+        .single();
       if (error) throw error;
+      if (contractFile && data) {
+        const path = await uploadContract(data.id, contractFile);
+        const { error: upErr } = await supabase
+          .from("sellers")
+          .update({ contract_path: path })
+          .eq("id", data.id);
+        if (upErr) throw upErr;
+      }
     },
     onSuccess: () => {
       toast.success("Vendedor cadastrado.");
@@ -134,8 +150,30 @@ export function useSellers() {
   });
 
   const updateMut = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Seller> }) => {
-      const { error } = await supabase.from("sellers").update(toRow(patch)).eq("id", id);
+    mutationFn: async ({
+      id,
+      patch,
+      contractFile,
+      removeContract,
+      currentContractPath,
+    }: {
+      id: string;
+      patch: Partial<Seller>;
+      contractFile?: File | null;
+      removeContract?: boolean;
+      currentContractPath?: string;
+    }) => {
+      const row = toRow(patch);
+      if (contractFile) {
+        row.contract_path = await uploadContract(id, contractFile);
+        if (currentContractPath && currentContractPath !== row.contract_path) {
+          await deleteContract(currentContractPath);
+        }
+      } else if (removeContract) {
+        row.contract_path = null;
+        if (currentContractPath) await deleteContract(currentContractPath);
+      }
+      const { error } = await supabase.from("sellers").update(row).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -158,14 +196,20 @@ export function useSellers() {
   });
 
   const addSeller = useCallback(
-    (s: Omit<Seller, "id" | "createdAt">) => addMut.mutate(s),
+    (s: Omit<Seller, "id" | "createdAt">, contractFile?: File | null) =>
+      addMut.mutate({ seller: s, contractFile }),
     [addMut],
   );
   const updateSeller = useCallback(
-    (id: string, patch: Partial<Seller>) => updateMut.mutate({ id, patch }),
+    (
+      id: string,
+      patch: Partial<Seller>,
+      opts?: { contractFile?: File | null; removeContract?: boolean; currentContractPath?: string },
+    ) => updateMut.mutate({ id, patch, ...opts }),
     [updateMut],
   );
   const removeSeller = useCallback((id: string) => removeMut.mutate(id), [removeMut]);
+
 
   return {
     sellers: query.data ?? [],
