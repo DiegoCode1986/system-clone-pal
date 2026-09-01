@@ -38,6 +38,7 @@ export type Database = {
       sellers: {
         Row: {
           admission_date: string | null
+          contract_path: string | null
           cpf: string
           created_at: string
           equipment_serial: string | null
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           admission_date?: string | null
+          contract_path?: string | null
           cpf: string
           created_at?: string
           equipment_serial?: string | null
@@ -70,6 +72,7 @@ export type Database = {
         }
         Update: {
           admission_date?: string | null
+          contract_path?: string | null
           cpf?: string
           created_at?: string
           equipment_serial?: string | null
