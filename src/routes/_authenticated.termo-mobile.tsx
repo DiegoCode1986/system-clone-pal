@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/select";
 import { useSellers } from "@/lib/sellers-store";
 import { useProfile } from "@/lib/profile-store";
-import { filialLabel } from "@/lib/filiais";
+import { filialLabel, FILIAIS, type Filial } from "@/lib/filiais";
+import { FILIAL_EMPRESA } from "@/lib/filial-empresa";
 
 
 export const Route = createFileRoute("/_authenticated/termo-mobile")({
