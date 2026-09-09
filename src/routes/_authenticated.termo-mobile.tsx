@@ -119,10 +119,11 @@ function TermoMobile() {
 
           <p className="mb-6 text-sm leading-relaxed">
             A <strong>TECIDOS E ARMARINHOS MIGUEL BARTOLOMEU S/A</strong>,
-            estabelecida na Rua 03, S/N, Quadra 01, Chácara Saia Velha,
-            Valparaíso de Goiás, CEP: 72876-715, inscrita no CNPJ sob nº
-            17.359.233/0026-36, doravante denominada <strong>"EMPRESA"</strong>
-            , autoriza:
+            estabelecida na {empresa?.endereco || "___________________"},{" "}
+            {empresa?.cidade || "___________________"}
+            {empresa?.cep ? `, CEP: ${empresa.cep}` : ""}, inscrita no CNPJ sob
+            nº {empresa?.cnpj || "___________________"}, doravante denominada{" "}
+            <strong>"EMPRESA"</strong>, autoriza:
           </p>
 
           <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-2">
