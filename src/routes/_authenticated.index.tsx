@@ -20,11 +20,15 @@ import {
 import {
   useSellers,
   statusLabel,
+  validateContractFile,
+  getContractUrl,
   type SellerStatus,
   type Seller,
 } from "@/lib/sellers-store";
+import { toast } from "sonner";
 import { useProfile } from "@/lib/profile-store";
 import { filialLabel } from "@/lib/filiais";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
