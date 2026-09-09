@@ -381,6 +381,7 @@ function SellerCard({
 }
 
 type FormData = Omit<Seller, "id" | "createdAt">;
+type ContractOpts = { contractFile: File | null; removeContract: boolean };
 
 function SellerFormDialog({
   mode,
@@ -390,7 +391,7 @@ function SellerFormDialog({
 }: {
   mode: "create" | "edit";
   seller?: Seller;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: FormData, contract: ContractOpts) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(seller?.name ?? "");
@@ -402,8 +403,24 @@ function SellerFormDialog({
   const [admissionDate, setAdmissionDate] = useState(seller?.admissionDate ?? "");
   const [exitDate, setExitDate] = useState(seller?.exitDate ?? "");
   const [notes, setNotes] = useState(seller?.notes ?? "");
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [removeContract, setRemoveContract] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (seller?.contractPath) {
+      getContractUrl(seller.contractPath).then((url) => {
+        if (active) setPreviewUrl(url);
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [seller?.contractPath]);
 
   const valid = name.trim() && cpf.trim() && matricula.trim() && role.trim();
+
 
   return (
     <DialogContent className="max-w-md">
