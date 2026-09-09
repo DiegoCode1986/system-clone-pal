@@ -244,8 +244,8 @@ function Index() {
       <Dialog open={creating} onOpenChange={setCreating}>
         <SellerFormDialog
           mode="create"
-          onSubmit={(data) => {
-            addSeller(data);
+          onSubmit={(data, contract) => {
+            addSeller(data, contract.contractFile);
             setCreating(false);
           }}
           onCancel={() => setCreating(false)}
@@ -257,14 +257,19 @@ function Index() {
           <SellerFormDialog
             mode="edit"
             seller={editing}
-            onSubmit={(data) => {
-              updateSeller(editing.id, data);
+            onSubmit={(data, contract) => {
+              updateSeller(editing.id, data, {
+                contractFile: contract.contractFile,
+                removeContract: contract.removeContract,
+                currentContractPath: editing.contractPath,
+              });
               setEditing(null);
             }}
             onCancel={() => setEditing(null)}
           />
         )}
       </Dialog>
+
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
