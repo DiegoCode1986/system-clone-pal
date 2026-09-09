@@ -28,9 +28,14 @@ function TermoMobile() {
   const navigate = useNavigate();
   const { sellers } = useSellers();
   const { filial } = useProfile();
-  const filialName = filial ? filialLabel[filial] : "";
   const [sellerId, setSellerId] = useState<string>("");
   const [serial, setSerial] = useState<string>("");
+  const [filialSel, setFilialSel] = useState<Filial | "">("");
+
+  const filialAtiva = (filialSel || filial || "") as Filial | "";
+  const filialName = filialAtiva ? filialLabel[filialAtiva] : "";
+  const empresa = filialAtiva ? FILIAL_EMPRESA[filialAtiva] : null;
+
 
 
   const seller = useMemo(
