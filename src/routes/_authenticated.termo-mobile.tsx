@@ -57,6 +57,24 @@ function TermoMobile() {
               <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
             </Button>
             <div className="flex-1 grid gap-2">
+              <Label>Filial</Label>
+              <Select
+                value={filialAtiva}
+                onValueChange={(v) => setFilialSel(v as Filial)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolha a filial..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {FILIAIS.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      {filialLabel[f]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 grid gap-2">
               <Label>Selecionar Vendedor</Label>
               <Select value={sellerId} onValueChange={setSellerId}>
                 <SelectTrigger>
