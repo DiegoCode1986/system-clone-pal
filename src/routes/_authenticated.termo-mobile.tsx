@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/select";
 import { useSellers } from "@/lib/sellers-store";
 import { useProfile } from "@/lib/profile-store";
-import { filialLabel } from "@/lib/filiais";
+import { filialLabel, FILIAIS, type Filial } from "@/lib/filiais";
+import { FILIAL_EMPRESA } from "@/lib/filial-empresa";
 
 
 export const Route = createFileRoute("/_authenticated/termo-mobile")({
@@ -27,9 +28,14 @@ function TermoMobile() {
   const navigate = useNavigate();
   const { sellers } = useSellers();
   const { filial } = useProfile();
-  const filialName = filial ? filialLabel[filial] : "";
   const [sellerId, setSellerId] = useState<string>("");
   const [serial, setSerial] = useState<string>("");
+  const [filialSel, setFilialSel] = useState<Filial | "">("");
+
+  const filialAtiva = (filialSel || filial || "") as Filial | "";
+  const filialName = filialAtiva ? filialLabel[filialAtiva] : "";
+  const empresa = filialAtiva ? FILIAL_EMPRESA[filialAtiva] : null;
+
 
 
   const seller = useMemo(
@@ -50,6 +56,24 @@ function TermoMobile() {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
             </Button>
+            <div className="flex-1 grid gap-2">
+              <Label>Filial</Label>
+              <Select
+                value={filialAtiva}
+                onValueChange={(v) => setFilialSel(v as Filial)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Escolha a filial..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {FILIAIS.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      {filialLabel[f]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex-1 grid gap-2">
               <Label>Selecionar Vendedor</Label>
               <Select value={sellerId} onValueChange={setSellerId}>
@@ -95,10 +119,11 @@ function TermoMobile() {
 
           <p className="mb-6 text-sm leading-relaxed">
             A <strong>TECIDOS E ARMARINHOS MIGUEL BARTOLOMEU S/A</strong>,
-            estabelecida na Rua 03, S/N, Quadra 01, Chácara Saia Velha,
-            Valparaíso de Goiás, CEP: 72876-715, inscrita no CNPJ sob nº
-            17.359.233/0026-36, doravante denominada <strong>"EMPRESA"</strong>
-            , autoriza:
+            estabelecida na {empresa?.endereco || "___________________"},{" "}
+            {empresa?.cidade || "___________________"}
+            {empresa?.cep ? `, CEP: ${empresa.cep}` : ""}, inscrita no CNPJ sob
+            nº {empresa?.cnpj || "___________________"}, doravante denominada{" "}
+            <strong>"EMPRESA"</strong>, autoriza:
           </p>
 
           <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-2">
@@ -188,7 +213,7 @@ function TermoMobile() {
           </ol>
 
           <p className="mb-12 text-sm">
-            Valparaíso de Goiás, {(() => {
+            {empresa?.cidade || "___________________"}, {(() => {
               const d = new Date();
               const meses = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
               return `${String(d.getDate()).padStart(2,"0")} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
